@@ -1,38 +1,35 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<section class="py-10 bg-[#f6f8fb]">
-  <div class="container mx-auto px-5 max-w-5xl">
+<section class="status-page">
+  <div class="container status-page__container">
 
     <!-- Header -->
-    <div class="mb-5">
-      <h1 class="text-lg md:text-xl font-extrabold text-gray-900">Lacak Aduan Anda</h1>
-      <p class="mt-1 text-sm text-gray-500">
+    <div class="status-head">
+      <h1 class="status-head__title">Lacak Aduan Anda</h1>
+      <p class="status-head__desc">
         Pantau perkembangan laporan pelanggan Anda secara transparan dan real-time
       </p>
     </div>
 
     <!-- Search box -->
-    <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-      <form action="<?= site_url('status') ?>" method="get" class="flex flex-col md:flex-row gap-3">
-        <div class="flex-1 relative">
+    <div class="status-card">
+      <form action="<?= site_url('status') ?>" method="get" class="status-form">
+        <div class="status-form__field">
           <input
             name="kode"
             type="text"
             value="<?= esc($_GET['kode'] ?? '') ?>"
             placeholder="Masukkan Nomor Tiket"
-            class="w-full bg-gray-100 border border-gray-200 rounded-md py-3 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+            class="status-input"
             required
           />
-          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-primary">
+          <span class="status-input__icon" aria-hidden="true">
             <i class="bi bi-search"></i>
           </span>
         </div>
 
-        <button
-          type="submit"
-          class="px-6 py-3 rounded-md bg-primary hover:bg-secondary text-white text-sm font-extrabold transition"
-        >
+        <button type="submit" class="btn btn--primary status-btn">
           Cari Status Laporan
         </button>
       </form>
@@ -40,41 +37,41 @@
 
     <?php $statusError = session()->getFlashdata('status_error'); ?>
     <?php if (!empty($statusError)): ?>
-      <div class="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+      <div class="status-alert status-alert--danger">
         <?= esc($statusError) ?>
       </div>
     <?php endif; ?>
 
     <?php if (!empty($laporan) && is_array($laporan)): ?>
       <!-- Detail title -->
-      <div class="mt-6 flex items-center gap-2">
-        <span class="text-primary text-lg">
+      <div class="status-detail-title">
+        <span class="status-detail-title__icon" aria-hidden="true">
           <i class="bi bi-file-earmark-text"></i>
         </span>
-        <h2 class="text-base md:text-lg font-extrabold text-gray-900">
+        <h2 class="status-detail-title__text">
           Detail Laporan : <?= esc($laporan['kode'] ?? '-') ?>
         </h2>
       </div>
 
       <!-- Detail card -->
-      <div class="mt-3 bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div class="text-xs text-gray-500 font-semibold">Judul Pengaduan</div>
-            <div class="mt-1 text-lg font-extrabold text-gray-900">
+      <div class="status-card status-card--pad">
+        <div class="status-detail">
+          <div class="status-detail__left">
+            <div class="status-meta-label">Judul Pengaduan</div>
+            <div class="status-detail__headline">
               <?= esc($laporan['judul'] ?? '-') ?>
             </div>
 
-            <div class="mt-3 grid grid-cols-2 gap-8 text-sm">
+            <div class="status-meta-grid">
               <div>
-                <div class="text-xs text-gray-500 font-semibold">Kategori</div>
-                <div class="mt-1 text-gray-800">
+                <div class="status-meta-label">Kategori</div>
+                <div class="status-meta-value">
                   <?= esc($laporan['kategori'] ?? '-') ?>
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 font-semibold">Tanggal Masuk</div>
-                <div class="mt-1 text-gray-800">
+                <div class="status-meta-label">Tanggal Masuk</div>
+                <div class="status-meta-value">
                   <?= esc($laporan['tanggal_masuk'] ?? ($laporan['created_at'] ?? '-')) ?>
                 </div>
               </div>
@@ -82,18 +79,17 @@
           </div>
 
           <?php
-            // warna badge status (utama: biru untuk diproses)
             $status = strtolower(trim($laporan['status'] ?? ''));
-            $badge = 'bg-blue-100 text-blue-700';
-            if (in_array($status, ['diterima','pending'])) $badge = 'bg-yellow-100 text-yellow-800';
-            if (in_array($status, ['diproses','proses']))  $badge = 'bg-blue-100 text-blue-700';
-            if (in_array($status, ['selesai','closed']))   $badge = 'bg-green-100 text-green-800';
-            if (in_array($status, ['ditolak','reject']))   $badge = 'bg-red-100 text-red-800';
+            $badgeClass = 'badge badge--process';
+            if (in_array($status, ['diterima','pending'])) $badgeClass = 'badge badge--pending';
+            if (in_array($status, ['diproses','proses']))  $badgeClass = 'badge badge--process';
+            if (in_array($status, ['selesai','closed']))   $badgeClass = 'badge badge--done';
+            if (in_array($status, ['ditolak','reject']))   $badgeClass = 'badge badge--reject';
           ?>
-          <div class="md:text-right">
-            <div class="text-[11px] text-gray-500 font-extrabold tracking-wide">STATUS SAAT INI</div>
-            <div class="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold <?= $badge ?>">
-              <span class="w-2 h-2 rounded-full bg-current opacity-60"></span>
+          <div class="status-detail__right">
+            <div class="status-badge-label">STATUS SAAT INI</div>
+            <div class="<?= $badgeClass ?>">
+              <span class="badge__dot"></span>
               <?= esc($laporan['status_label'] ?? ($laporan['status'] ?? '-')) ?>
             </div>
           </div>
@@ -101,64 +97,57 @@
       </div>
 
       <!-- Timeline card -->
-      <div class="mt-4 bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+      <div class="status-card status-card--pad">
         <?php $timeline = $laporan['timeline'] ?? []; ?>
 
-        <div class="relative">
-          <!-- garis vertikal -->
-          <div class="absolute left-8 top-2 bottom-2 w-px bg-gray-200"></div>
+        <div class="timeline">
+          <div class="timeline__line" aria-hidden="true"></div>
 
-          <div class="space-y-6">
+          <div class="timeline__list">
             <?php foreach ($timeline as $t): ?>
               <?php
-                // state: done / active / todo
                 $state = $t['state'] ?? 'todo';
 
-                // styling icon circle
-                // done: biru solid, active: biru outline, todo: abu outline
-                $circle = 'bg-gray-100 text-gray-500 border-gray-300';
-                if ($state === 'done')   $circle = 'bg-primary text-white border-primary';
-                if ($state === 'active') $circle = 'bg-white text-primary border-primary';
+                // circle
+                $circleClass = 'tl-circle tl-circle--todo';
+                if ($state === 'done')   $circleClass = 'tl-circle tl-circle--done';
+                if ($state === 'active') $circleClass = 'tl-circle tl-circle--active';
 
-                // text style
-                $titleCls = 'text-gray-900';
-                $timeCls  = 'text-gray-500';
-                $noteCls  = 'text-gray-700';
-                $noteBg   = 'bg-gray-50';
+                // text
+                $titleClass = 'tl-title';
+                $timeClass  = 'tl-time';
+                $noteClass  = 'tl-note';
                 if ($state === 'todo') {
-                  $titleCls = 'text-gray-400';
-                  $timeCls  = 'text-gray-400';
-                  $noteCls  = 'text-gray-400';
-                  $noteBg   = 'bg-gray-100';
+                  $titleClass .= ' tl-title--todo';
+                  $timeClass  .= ' tl-time--todo';
+                  $noteClass  .= ' tl-note--todo';
                 }
 
-                // icon type (pakai bootstrap icons biar mirip)
                 $icon = $t['icon'] ?? 'check'; // check | process | finish
-                $iconHtml = '<i class="bi bi-check-lg text-base"></i>';
-                if ($icon === 'process') $iconHtml = '<i class="bi bi-clipboard-check text-base"></i>';
-                if ($icon === 'finish')  $iconHtml = '<i class="bi bi-check-circle text-base"></i>';
+                $iconHtml = '<i class="bi bi-check-lg"></i>';
+                if ($icon === 'process') $iconHtml = '<i class="bi bi-clipboard-check"></i>';
+                if ($icon === 'finish')  $iconHtml = '<i class="bi bi-check-circle"></i>';
               ?>
 
-              <div class="relative pl-16">
-                <!-- icon -->
-                <div class="absolute left-4 top-0.5 w-9 h-9 rounded-full border flex items-center justify-center <?= $circle ?>">
+              <div class="timeline-item">
+                <div class="<?= $circleClass ?>">
                   <?= $iconHtml ?>
                 </div>
 
-                <!-- content -->
-                <div>
-                  <div class="text-sm font-extrabold <?= $titleCls ?>">
+                <div class="timeline-item__content">
+                  <div class="<?= $titleClass ?>">
                     <?= esc($t['title'] ?? '-') ?>
                   </div>
-                  <div class="mt-0.5 text-xs <?= $timeCls ?>">
+                  <div class="<?= $timeClass ?>">
                     <?= esc($t['time'] ?? '-') ?>
                   </div>
 
-                  <div class="mt-2 rounded-lg px-4 py-3 text-sm border border-gray-100 <?= $noteBg ?> <?= $noteCls ?>">
+                  <div class="<?= $noteClass ?>">
                     <?= esc($t['note'] ?? '-') ?>
                   </div>
                 </div>
               </div>
+
             <?php endforeach; ?>
           </div>
 

@@ -4,114 +4,102 @@ $loginSuccess = session()->getFlashdata('login_success');
 ?>
 
 <!-- OVERLAY -->
-<div
-  id="loginModal"
-  class="fixed inset-0 z-[999] hidden items-center justify-center px-4"
-  aria-hidden="true"
->
+<div id="loginModal" class="modal" aria-hidden="true">
+
   <!-- Backdrop -->
-  <div class="absolute inset-0 bg-black/40" onclick="closeLoginModal()"></div>
+  <div class="modal__backdrop" onclick="closeLoginModal()" aria-hidden="true"></div>
 
   <!-- Modal Box -->
-  <div class="relative w-full max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-    <!-- Header -->
-    <div class="relative px-5 py-4 border-b border-gray-100">
-      <!-- Judul center -->
-      <h2 class="absolute inset-0 flex items-center justify-center text-sm font-extrabold tracking-widest text-gray-800 uppercase">
-        MASUK
-      </h2>
+  <div class="modal__panel modal-login" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
 
-      <!-- Tombol close -->
-      <button
-        type="button"
-        class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
-        onclick="closeLoginModal()"
-        aria-label="Tutup"
-      >
+    <!-- Header -->
+    <div class="modal__header modal-login__header">
+      <h2 id="loginModalTitle" class="modal__title modal-login__title">MASUK</h2>
+
+      <button type="button" class="modal__close modal-login__close" onclick="closeLoginModal()" aria-label="Tutup">
         ✕
       </button>
     </div>
 
     <!-- Body -->
-    <div class="p-5">
+    <div class="modal__body modal-login__body">
+
       <?php if (!empty($loginError)): ?>
-        <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div class="status-alert status-alert--danger" style="margin-bottom:1rem;">
           <?= esc($loginError) ?>
         </div>
       <?php endif; ?>
 
       <?php if (!empty($loginSuccess)): ?>
-        <div class="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+        <div class="status-alert status-alert--success" style="margin-bottom:1rem;">
           <?= esc($loginSuccess) ?>
         </div>
       <?php endif; ?>
 
-      <form action="<?= site_url('login') ?>" method="post" class="space-y-4">
+      <form action="<?= site_url('login') ?>" method="post" class="modal-form modal-login__form">
         <?= csrf_field() ?>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1" for="login_identifier">
-            Email / No. Telp / Username
+        <div class="modal-field login-field">
+          <label class="modal-label" for="login_identifier">
+            Email, No. telp, atau username
           </label>
           <input
             id="login_identifier"
             name="identifier"
             type="text"
             value="<?= old('identifier') ?>"
-            placeholder="Masukkan email / no. telp / username"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+            placeholder=""
+            class="modal-input"
             required
             autocomplete="username"
           />
         </div>
 
-        <div>
-          <div class="flex items-center justify-between">
-            <label class="block text-xs font-semibold text-gray-700 mb-1" for="login_password">Password</label>
-            <a href="<?= site_url('forgot-password') ?>" class="text-xs text-blue-600 hover:underline">
+        <div class="modal-field login-field">
+          <div class="modal-row">
+            <label class="modal-label" for="login_password">Password</label>
+            <a href="<?= site_url('forgot-password') ?>" class="modal-link">
               Lupa password?
             </a>
           </div>
+
           <input
             id="login_password"
             name="password"
             type="password"
-            placeholder="Masukkan password"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+            placeholder=""
+            class="modal-input"
             required
             autocomplete="current-password"
           />
         </div>
 
-        <button
-          type="submit"
-          class="w-full py-2.5 bg-primary text-white text-sm font-extrabold rounded-md hover:bg-secondary transition"
-        >
+        <button type="submit" class="btn btn--primary btn-login">
           MASUK
         </button>
       </form>
 
-      <div class="mt-4 text-center text-xs text-gray-600">
-        Anda belum memiliki akun?
-        <a href="<?= site_url('register') ?>" class="text-blue-600 font-bold hover:underline">
-          DAFTAR SEKARANG
-        </a>
-      </div>
     </div>
+
+    <!-- Footer -->
+    <div class="modal-login__footer">
+      <p>Anda belum memiliki akun?</p>
+      <a href="<?= site_url('register') ?>" class="modal-foot__link">
+        DAFTAR SEKARANG
+      </a>
+    </div>
+
   </div>
 </div>
 
 <script>
   function openLoginModal() {
     const modal = document.getElementById('loginModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
 
-    // lock scroll (biar UX modal lebih rapi)
-    document.body.classList.add('overflow-hidden');
+    document.body.classList.add('no-scroll');
 
-    // fokus ke identifier
     setTimeout(() => {
       const idn = document.getElementById('login_identifier');
       if (idn) idn.focus();
@@ -120,15 +108,12 @@ $loginSuccess = session()->getFlashdata('login_success');
 
   function closeLoginModal() {
     const modal = document.getElementById('loginModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
 
-    // unlock scroll
-    document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('no-scroll');
   }
 
-  // ESC untuk menutup
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeLoginModal();
   });
@@ -136,7 +121,6 @@ $loginSuccess = session()->getFlashdata('login_success');
 
 <?php if (!empty($loginError)): ?>
   <script>
-    // kalau login gagal, otomatis buka modal agar error terlihat
     window.addEventListener('load', () => openLoginModal());
   </script>
 <?php endif; ?>
