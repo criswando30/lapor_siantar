@@ -33,9 +33,21 @@ function navClass(bool $active): string
         BERITA
       </a>
 
-      <button type="button" onclick="openLoginModal()" class="btn btn--primary btn--pill btn--sm">
-        MASUK
-      </button>
+      <?php if (session()->get('isLoggedIn')): ?>
+        <div class="nav-user">
+          <span class="nav-user__name">
+            Halo, <?= esc(session('nama')) ?>
+          </span>
+          <a href="<?= site_url('logout') ?>" class="btn btn--primary btn--pill btn--sm">
+            LOGOUT
+          </a>
+        </div>
+      <?php else: ?>
+        <button type="button" onclick="openLoginModal()" class="btn btn--primary btn--pill btn--sm">
+          MASUK
+        </button>
+      <?php endif; ?>
+
     </nav>
 
     <!-- MOBILE MENU BUTTON -->

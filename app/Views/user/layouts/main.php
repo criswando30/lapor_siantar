@@ -12,9 +12,9 @@
 </head>
 
 <body>
-  <?= $this->include('partials/header') ?>
+  <?= $this->include('user/partials/header') ?>
   <?= $this->renderSection('content') ?>
-  <?= $this->include('partials/footer') ?>
-  <?= $this->include('partials/login_modal') ?>
+  <?= $this->include('user/partials/footer') ?>
+  <?= $this->include('user/partials/login_modal') ?>
 </body>
 </html>

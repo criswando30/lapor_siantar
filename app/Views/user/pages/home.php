@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('user/layouts/main') ?>
 <?= $this->section('content') ?>
 
 <!-- ================= HERO + FORM ================= -->
@@ -9,7 +9,7 @@
   <div class="container hero__content">
 
     <h1 class="hero__title">
-      Layanan Pengaduan Masyarakat<br>Pematangsiantar
+      Layanan Pengaduan Infrastruktur<br>Digital Diskominfo
     </h1>
 
     <div class="hero__spacer"></div>
@@ -22,57 +22,67 @@
           <div class="card__header">
             <h2 class="card__header-title">SAMPAIKAN LAPORAN ANDA</h2>
           </div>
+          <form action="<?= site_url('lapor') ?>" method="post" enctype="multipart/form-data">
+            <?= csrf_field() ?>
 
-          <div class="card__body">
-            <input class="form-control" placeholder="Ketik Judul Laporan Anda *">
-            <textarea class="form-control" rows="5" placeholder="Ketik Isi Laporan *"></textarea>
+            <div class="card__body">
+              <input name="judul" class="form-control" placeholder="Ketik Judul Laporan Anda *" required>
+              <textarea name="isi" class="form-control" rows="5" placeholder="Ketik Isi Laporan *" required></textarea>
 
-            <input class="form-control" placeholder="Pilih Tanggal Kejadian *" type="text" onfocus="this.type='date'"
-              onblur="if(!this.value)this.type='text'">
 
-            <input class="form-control" placeholder="Ketik Lokasi Kejadian *">
+              <input name="tanggal_kejadian" class="form-control" placeholder="Pilih Tanggal Kejadian *" type="text"
+                onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" required>
 
-            <select class="form-control">
-              <option disabled selected>Ketik Instansi Tujuan*</option>
-              <option>Dinas Kesehatan</option>
-              <option>Dinas Perhubungan</option>
-              <option>Dinas Kebersihan</option>
-            </select>
+              <input name="lokasi_kejadian" class="form-control" placeholder="Ketik Lokasi Kejadian *" required>
 
-            <select class="form-control">
-              <option disabled selected>Pilih Kategori Laporan Anda *</option>
-              <option>Keluhan</option>
-              <option>Aspirasi</option>
-              <option>Informasi</option>
-            </select>
+              <select name="instansi_id" class="form-control" required>
+                <option disabled selected>Pilih Instansi Tujuan *</option>
+                <?php foreach (($instansiList ?? []) as $i): ?>
+                  <option value="<?= (int) $i['id'] ?>"><?= esc($i['nama']) ?></option>
+                <?php endforeach; ?>
+              </select>
 
-            <!-- Upload -->
-            <input id="lampiran" type="file" accept="image/*" multiple class="hidden" onchange="handleLampiran(this)">
+              <select name="kategori_id" class="form-control" required>
+                <option disabled selected>Pilih Kategori Laporan Anda *</option>
+                <?php foreach (($kategoriList ?? []) as $k): ?>
+                  <option value="<?= (int) $k['id'] ?>"><?= esc($k['nama']) ?></option>
+                <?php endforeach; ?>
+              </select>
 
-            <div id="uploadBox" class="upload-box hidden" onclick="document.getElementById('lampiran').click()">
-              <p>UPLOAD LAMPIRAN (MAX 2MB)</p>
-            </div>
+              <!-- Upload -->
+              <input id="lampiran" name="lampiran[]" type="file" accept="image/*" multiple class="hidden"
+                onchange="handleLampiran(this)">
 
-            <div id="fileList" class="file-list"></div>
 
-            <div class="form-actions">
-              <div class="form-attachment">
-                <button type="button" onclick="toggleUploadBox()" class="link-btn">
-                  <i class="bi bi-paperclip"></i>
-                  Upload Lampiran
-                </button>
+              <div id="uploadBox" class="upload-box hidden" onclick="document.getElementById('lampiran').click()">
+                <p>UPLOAD LAMPIRAN (MAX 2MB)</p>
               </div>
 
-              <div class="form-submit">
-                <button class="btn btn--primary btn--xs">LAPOR!</button>
-              </div>
-            </div>
+              <div id="fileList" class="file-list"></div>
 
+              <div class="form-actions">
+                <div class="form-attachment">
+                  <button type="button" onclick="toggleUploadBox()" class="link-btn">
+                    <i class="bi bi-paperclip"></i>
+                    Upload Lampiran
+                  </button>
+                </div>
 
-          </div>
+                <?php if (session()->get('isLoggedIn')): ?>
+                  <button type="submit" class="btn btn--primary btn--xs">LAPOR!</button>
+                <?php else: ?>
+                  <button type="button" class="btn btn--primary btn--xs" onclick="openLoginModal()">MASUK UNTUK
+                    MELAPOR</button>
+                <?php endif; ?>
+          </form>
+
         </div>
+
+
       </div>
     </div>
+  </div>
+  </div>
 
   </div>
 </section>
@@ -173,16 +183,28 @@
     renderFileList();
   }
 
-  function renderFileList() {
+  function handleLampiran(input) {
+    const maxSize = 2 * 1024 * 1024;
+
+    // bersihkan list tampilan
     const list = document.getElementById('fileList');
     list.innerHTML = '';
-    selectedFiles.forEach((f, i) => {
+
+    Array.from(input.files).forEach((file, i) => {
+      if (file.size > maxSize) {
+        alert('Ukuran file maksimal 2MB');
+        input.value = ''; // reset karena ada yang kebesaran
+        return;
+      }
+
       list.innerHTML += `
         <div class="file-row">
-          <span>${f.name}</span>
-          <button onclick="removeFile(${i})" class="btn-remove">&times;</button>
+          <span>${file.name}</span>
         </div>`;
     });
+
+    // HAPUS BARIS INI:
+    // input.value = '';
   }
 
   function removeFile(i) {

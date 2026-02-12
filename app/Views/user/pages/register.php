@@ -1,10 +1,10 @@
-<?= $this->extend('layouts/auth') ?>
+<?= $this->extend('user/layouts/auth') ?>
 <?= $this->section('content') ?>
 
 <section class="auth-page" style="background:#1d84e4;">
   <!-- Logo -->
   <div class="auth-logo">
-    <img src="<?= base_url('assets/img/logo_white.png') ?>" alt="LaporSiantar" class="auth-logo__img" />
+    <img src="<?= base_url('assets/img/logowhite.png') ?>" alt="LaporSiantar" class="auth-logo__img" />
   </div>
 
   <!-- Card -->
