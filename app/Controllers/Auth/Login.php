@@ -7,15 +7,6 @@ use App\Models\UserModel;
 
 class Login extends BaseController
 {
-    public function index()
-    {
-        // Kalau login kamu modal di home, method ini boleh dipakai untuk halaman login terpisah
-        // Kalau tidak dipakai, boleh dihapus.
-        return view('pages/login', [
-            'title' => 'Login - LaporSiantar',
-        ]);
-    }
-
     public function authenticate()
     {
         $rules = [
@@ -26,28 +17,43 @@ class Login extends BaseController
         if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
-                ->with('login_error', 'Identifier dan password wajib diisi.');
+                ->with('login_error', 'Email/No. HP dan password wajib diisi.');
         }
 
         $identifier = trim((string) $this->request->getPost('identifier'));
-        $password   = (string) $this->request->getPost('password');
+        $password = (string) $this->request->getPost('password');
 
         $userModel = new UserModel();
-        $user = $userModel->findByIdentifier($identifier);
+        $user = $userModel->where('email', $identifier)
+            ->orWhere('no_hp', $identifier)
+            ->first();
 
-        if (!$user || !password_verify($password, $user['password_hash'])) {
+
+        if (!$user) {
             return redirect()->back()
                 ->withInput()
-                ->with('login_error', 'Login gagal. Cek kembali data Anda.');
+                ->with('login_error', 'Login gagal. Email/No. HP tidak ditemukan.');
+        }
+
+        if (($user['status_akun'] ?? 'nonaktif') !== 'aktif') {
+            return redirect()->back()
+                ->withInput()
+                ->with('login_error', 'Akun Anda nonaktif. Silakan hubungi admin.');
+        }
+
+        if (!password_verify($password, (string) $user['password_hash'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('login_error', 'Login gagal. Password salah.');
         }
 
         session()->set([
             'isLoggedIn' => true,
-            'user_id'    => $user['id'],
-            'username'   => $user['username'],
-            'nama'       => $user['nama_lengkap'],
-            'email'      => $user['email'],
-            'role'       => $user['role'],
+            'user_id' => (int) $user['id'],
+            'nama' => (string) $user['nama'],
+            'email' => (string) ($user['email'] ?? ''),
+            'no_hp' => (string) $user['no_hp'],
+            'role' => (string) $user['role'], // admin / masyarakat
         ]);
 
         if (($user['role'] ?? '') === 'admin') {

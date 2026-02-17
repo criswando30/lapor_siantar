@@ -466,6 +466,120 @@ body{
   font-size:12px;
 }
 
+/* ===== Date Filter Popover ===== */
+.date-filter{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.date-popover{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 320px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  z-index: 60;
+}
+
+.date-popover::before{
+  content:"";
+  position:absolute;
+  top:-8px;
+  right: 18px;
+  width: 14px;
+  height: 14px;
+  background:#fff;
+  border-left:1px solid var(--border);
+  border-top:1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.date-popover__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to bottom, rgba(59,130,246,.06), rgba(59,130,246,0));
+}
+
+.date-popover__title{
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.date-popover__close{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+.date-popover__close:hover{
+  background: rgba(0,0,0,.04);
+  color: var(--text);
+}
+
+.date-popover__body{
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.date-field{
+  display:grid;
+  gap: 6px;
+}
+
+.date-label{
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.date-input{
+  height: 40px;
+  padding: 0 12px;
+  border:1px solid var(--border);
+  border-radius: 10px;
+  background:#fff;
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+  box-shadow: 0 2px 10px rgba(16,24,40,.05);
+}
+
+.date-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.date-hint{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Mobile: popover full width */
+@media (max-width: 820px){
+  .date-popover{
+    left: 0;
+    right: 0;
+    width: auto;
+  }
+  .date-popover::before{ right: 22px; }
+}
+
+
 /* ===== Table ===== */
 .table-wrap{
   border:1px solid var(--border);
@@ -528,7 +642,6 @@ body{
   line-height:1.35;
 }
 
-.cell-petugas{ color: var(--text); font-weight:800; }
 
 /* badges */
 .badge{
@@ -583,4 +696,115 @@ body{
 @media (max-width: 820px){
   .table-wrap{ overflow:auto; }
   .table{ min-width: 900px; }
+}
+
+
+/* ===== Filter Chip ===== */
+.filter-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 10px;
+  border:1px solid var(--border);
+  border-radius: 999px;
+  background:#fff;
+  box-shadow: 0 2px 10px rgba(16,24,40,.05);
+  color: var(--text);
+  font-weight: 800;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+.filter-chip i{ color: var(--muted); }
+.chip-x{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.04);
+  color: var(--muted);
+  text-decoration:none;
+  font-weight: 900;
+}
+.chip-x:hover{
+  background: rgba(0,0,0,.08);
+  color: var(--text);
+}
+
+/* input search sedikit lebih enak */
+.input--search{
+  min-width: 340px;
+}
+
+/* tombol tanggal aktif */
+.btn.is-active{
+  border-color: rgba(59,130,246,.35) !important;
+  box-shadow: 0 6px 16px rgba(59,130,246,.12);
+  color: var(--text);
+}
+
+/* popover date grid lebih rapi */
+.date-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+
+/* mobile */
+@media (max-width: 820px){
+  .input--search{ min-width: 100%; }
+  .filter-chip{ margin-left: 0; margin-top: 10px; }
+  .date-grid{ grid-template-columns: 1fr; }
+}
+
+.pager-wrap ul{
+  margin: 12px 0 0;
+  padding: 0;
+  display:flex;
+  gap:8px;
+  list-style:none;
+}
+.pager-wrap a, .pager-wrap span{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:36px;
+  height:36px;
+  padding:0 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+  text-decoration:none;
+  font-weight:800;
+  color:var(--text);
+}
+.pager-wrap .active a, .pager-wrap .active span{
+  background: var(--blue-2);
+  border-color: var(--blue-2);
+  color:#fff;
+}
+
+/* Center alignment for specific columns */
+.th-center{
+  text-align: center !important;
+}
+
+.td-center{
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Center kategori */
+.cell-desc--center{
+  text-align: center;
+}
+
+.cell-desc--center .badge{
+  margin-bottom: 6px;
+}
+
+.cell-desc--center .cell-desc__text{
+  margin-top: 6px;
 }

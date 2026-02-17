@@ -2,15 +2,13 @@
 <?= $this->section('content') ?>
 
 <section class="auth-page" style="background:#1d84e4;">
-  <!-- Logo -->
   <div class="auth-logo">
-    <img src="<?= base_url('assets/img/logowhite.png') ?>" alt="LaporSiantar" class="auth-logo__img" />
+    <img src="<?= base_url('assets/img/logowhite.png') ?>" alt="Lapor E-Gov Siantar" class="auth-logo__img" />
   </div>
 
-  <!-- Card -->
   <div class="auth-card">
     <div class="auth-card__head">
-      <h1 class="auth-title">Daftar</h1>
+      <h1 class="auth-title">Daftar Akun</h1>
     </div>
 
     <div class="auth-card__body">
@@ -47,76 +45,39 @@
         </div>
       <?php endif; ?>
 
-      <!-- Alert info -->
       <div class="auth-info">
         <div class="auth-info__row">
           <span class="auth-info__icon">⚠</span>
           <div>
             <div class="auth-info__title">Mengapa kami meminta data ini?</div>
             <p class="auth-info__text">
-              Layanan SP4N-LAPOR! membutuhkan data pribadi pengguna sebagai jaminan keabsahan dan/atau aspirasi yang
-              disampaikan,
-              sebagai identifikasi publik, pengelolaan dan analisis data, penyusunan perencanaan dan pengambilan
-              kebijakan,
-              monitoring dan evaluasi, serta mendorong terciptanya kebijakan yang inklusif.
+              Data digunakan untuk kebutuhan identifikasi pelapor dan tindak lanjut laporan gangguan layanan e-Government.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- FORM -->
       <form action="<?= site_url('register') ?>" method="post" class="auth-form">
         <?= csrf_field() ?>
 
         <div class="auth-grid">
-          <div class="auth-field">
-            <label class="auth-label" for="nik">NIK</label>
-            <input id="nik" name="nik" value="<?= old('nik') ?>" class="auth-input" placeholder="NIK" />
-          </div>
 
           <div class="auth-field">
-            <label class="auth-label" for="nama_lengkap">Nama Lengkap*</label>
-            <input id="nama_lengkap" name="nama_lengkap" value="<?= old('nama_lengkap') ?>" required class="auth-input"
+            <label class="auth-label" for="nama">Nama Lengkap*</label>
+            <input id="nama" name="nama" value="<?= old('nama') ?>" required class="auth-input"
               placeholder="Nama Lengkap" />
           </div>
 
           <div class="auth-field">
-            <label class="auth-label" for="tempat_tinggal">Tempat Tinggal Saat Ini*</label>
-            <input id="tempat_tinggal" name="tempat_tinggal" value="<?= old('tempat_tinggal') ?>" required
-              class="auth-input" placeholder="Tempat Tinggal Saat Ini" />
+            <label class="auth-label" for="no_hp">No. HP Aktif*</label>
+            <input id="no_hp" name="no_hp" value="<?= old('no_hp') ?>" required class="auth-input"
+              placeholder="08xxxxxxxxxx" />
           </div>
 
-          <div class="auth-field">
-            <label class="auth-label" for="tanggal_lahir">Tanggal Lahir*</label>
-            <input id="tanggal_lahir" name="tanggal_lahir" type="date" value="<?= old('tanggal_lahir') ?>" required
-              class="auth-input" />
-          </div>
-
-          <div class="auth-field">
-            <label class="auth-label" for="jenis_kelamin">Jenis Kelamin*</label>
-            <select id="jenis_kelamin" name="jenis_kelamin" required class="auth-input">
-              <option value="" disabled <?= old('jenis_kelamin') ? '' : 'selected' ?>>Pilih</option>
-              <option value="L" <?= old('jenis_kelamin') === 'L' ? 'selected' : '' ?>>Laki-laki</option>
-              <option value="P" <?= old('jenis_kelamin') === 'P' ? 'selected' : '' ?>>Perempuan</option>
-            </select>
-          </div>
-
-          <div class="auth-field">
-            <label class="auth-label" for="no_telp">No. Telp Aktif*</label>
-            <input id="no_telp" name="no_telp" value="<?= old('no_telp') ?>" required class="auth-input"
-              placeholder="No. Telp Aktif" />
-          </div>
-
-          <div class="auth-field">
+          <div class="auth-field auth-field--wide">
             <label class="auth-label" for="email">Email*</label>
-            <input id="email" name="email" type="email" value="<?= old('email') ?>" required class="auth-input"
-              placeholder="Email" />
-          </div>
-
-          <div class="auth-field">
-            <label class="auth-label" for="username">Username*</label>
-            <input id="username" name="username" value="<?= old('username') ?>" required class="auth-input"
-              placeholder="Username" />
+            <input id="email" name="email" type="email" value="<?= old('email') ?>" class="auth-input"
+              placeholder="email@contoh.com" />
           </div>
 
           <div class="auth-field">
@@ -125,9 +86,9 @@
           </div>
 
           <div class="auth-field">
-            <label class="auth-label" for="password_confirm">Password Confirmation*</label>
+            <label class="auth-label" for="password_confirm">Konfirmasi Password*</label>
             <input id="password_confirm" name="password_confirm" type="password" required class="auth-input"
-              placeholder="Password Confirmation" />
+              placeholder="Ulangi Password" />
           </div>
 
         </div>
@@ -141,7 +102,6 @@
     </div>
   </div>
 
-  <!-- tombol kembali -->
   <div class="auth-back">
     <a href="<?= site_url() ?>" class="btn auth-back__btn">
       KEMBALI KE HALAMAN DEPAN

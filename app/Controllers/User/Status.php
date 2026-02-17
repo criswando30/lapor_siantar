@@ -4,8 +4,8 @@ namespace App\Controllers\User;
 
 use App\Controllers\BaseController;
 use App\Models\LaporanModel;
-use App\Models\LaporanTimelineModel;
-use App\Models\LaporanLampiranModel;
+use App\Models\LogStatusModel;
+use App\Models\LampiranModel;
 
 class Status extends BaseController
 {
@@ -16,22 +16,24 @@ class Status extends BaseController
 
         if ($kode !== '') {
             $laporanModel  = new LaporanModel();
-            $timelineModel = new LaporanTimelineModel();
-            $lampiranModel = new LaporanLampiranModel();
+            $logModel      = new LogStatusModel();
+            $lampiranModel = new LampiranModel();
 
-            $laporan = $laporanModel->findDetailByKode($kode);
+            // Ambil laporan berdasarkan kode tiket
+            $laporan = $laporanModel->where('kode_tiket', $kode)->first();
 
-            if (!$laporan) {
+            if (! $laporan) {
                 return redirect()->to(site_url('status'))
                     ->withInput()
                     ->with('status_error', 'Kode tiket tidak ditemukan.');
             }
 
-            // 1) timeline dari DB
-            $timelineRows = $timelineModel->where('laporan_id', $laporan['id'])
+            // 1) timeline dari log_status
+            $timelineRows = $logModel->where('laporan_id', $laporan['id'])
                 ->orderBy('created_at', 'ASC')
                 ->findAll();
 
+            // index timeline per status (ambil yang terakhir kalau ada duplikat)
             $byStatus = [];
             foreach ($timelineRows as $tr) {
                 if (!empty($tr['status'])) {
@@ -39,45 +41,35 @@ class Status extends BaseController
                 }
             }
 
-            $current = $laporan['status']; // pending/diterima/diproses/selesai/ditolak
+            $current = $laporan['status']; // laporan_diterima/diverifikasi/dalam_proses/selesai
 
-            // 2) definisi step UI
+            // 2) definisi step UI (sesuai enum DB)
             $steps = [
-                'pending'  => ['title' => 'Laporan Diterima', 'icon' => 'check'],
-                'diterima' => ['title' => 'Diverifikasi', 'icon' => 'check'],
-                'diproses' => ['title' => 'Dalam Proses', 'icon' => 'process'],
-                'selesai'  => ['title' => 'Selesai', 'icon' => 'finish'],
+                'laporan_diterima' => ['title' => 'Laporan Diterima', 'icon' => 'check'],
+                'diverifikasi'     => ['title' => 'Diverifikasi', 'icon' => 'check'],
+                'dalam_proses'     => ['title' => 'Dalam Proses', 'icon' => 'process'],
+                'selesai'          => ['title' => 'Selesai', 'icon' => 'finish'],
             ];
 
-            // 3) state done/active/todo
-            $stateMap = [
-                'pending'  => 'todo',
-                'diterima' => 'todo',
-                'diproses' => 'todo',
-                'selesai'  => 'todo',
-            ];
+            // 3) state default todo
+            $stateMap = array_fill_keys(array_keys($steps), 'todo');
 
-            if ($current === 'ditolak') {
-                $stateMap['pending'] = 'done';
+            // tentukan state berdasarkan status saat ini
+            $keys = array_keys($steps);
+            $posCurrent = array_search($current, $keys, true);
+
+            if ($posCurrent === false) {
+                // kalau status aneh, aktifkan step pertama
+                $stateMap[$keys[0]] = 'active';
             } else {
-                if ($current === 'pending') {
-                    $stateMap['pending'] = 'active';
-                } elseif ($current === 'diterima') {
-                    $stateMap['pending']  = 'done';
-                    $stateMap['diterima'] = 'active';
-                } elseif ($current === 'diproses') {
-                    $stateMap['pending']  = 'done';
-                    $stateMap['diterima'] = 'done';
-                    $stateMap['diproses'] = 'active';
-                } elseif ($current === 'selesai') {
-                    $stateMap['pending']  = 'done';
-                    $stateMap['diterima'] = 'done';
-                    $stateMap['diproses'] = 'done';
-                    $stateMap['selesai']  = 'done';
+                foreach ($keys as $i => $k) {
+                    if ($i < $posCurrent) $stateMap[$k] = 'done';
+                    elseif ($i === $posCurrent) $stateMap[$k] = ($current === 'selesai') ? 'done' : 'active';
+                    else $stateMap[$k] = 'todo';
                 }
             }
 
-            // 4) susun timeline final
+            // 4) susun timeline final untuk view
             $laporan['timeline'] = [];
             foreach ($steps as $st => $meta) {
                 $row = $byStatus[$st] ?? null;
@@ -85,33 +77,32 @@ class Status extends BaseController
                 $laporan['timeline'][] = [
                     'title'  => $meta['title'],
                     'time'   => $row['created_at'] ?? '-',
-                    'note'   => $row['note'] ?? $this->defaultNote($st),
-                    'icon'   => $row['icon'] ?? $meta['icon'],
+                    'note'   => $row['keterangan'] ?? $this->defaultNote($st),
+                    'icon'   => $meta['icon'],
                     'state'  => $stateMap[$st],
                     'status' => $st,
                 ];
             }
 
-            // 5) lampiran
+            // 5) lampiran (tabel: nama_file, path_file)
             $lampiranRows = $lampiranModel->where('laporan_id', $laporan['id'])
                 ->orderBy('created_at', 'ASC')
                 ->findAll();
 
             $laporan['lampiran'] = array_map(function ($f) {
-                $path = $f['file_path'] ?? '';
+                $path = $f['path_file'] ?? '';
                 return [
-                    'name' => $f['file_name'] ?? 'file',
+                    'name' => $f['nama_file'] ?? 'file',
                     'url'  => $path ? base_url($path) : '#',
                 ];
             }, $lampiranRows);
 
-            // 6) label status
+            // 6) label status (untuk badge)
             $labels = [
-                'pending'  => 'Pending',
-                'diterima' => 'Diterima',
-                'diproses' => 'Sedang Diproses',
-                'selesai'  => 'Selesai',
-                'ditolak'  => 'Ditolak',
+                'laporan_diterima' => 'Diterima',
+                'diverifikasi'     => 'Diverifikasi',
+                'dalam_proses'     => 'Dalam Proses',
+                'selesai'          => 'Selesai',
             ];
             $laporan['status_label'] = $labels[$laporan['status']] ?? strtoupper((string) $laporan['status']);
         }
@@ -126,11 +117,11 @@ class Status extends BaseController
     private function defaultNote(string $status): string
     {
         return match ($status) {
-            'pending'  => 'Laporan telah masuk ke sistem dan menunggu antrean verifikasi petugas.',
-            'diterima' => 'Laporan diverifikasi dan diteruskan ke instansi terkait untuk ditindaklanjuti.',
-            'diproses' => 'Laporan sedang dalam proses penanganan oleh instansi terkait. Mohon menunggu informasi selanjutnya.',
-            'selesai'  => 'Laporan telah selesai ditangani. Terima kasih atas partisipasi Anda.',
-            default    => '',
+            'laporan_diterima' => 'Laporan telah masuk ke sistem dan menunggu verifikasi petugas.',
+            'diverifikasi'     => 'Laporan diverifikasi dan diteruskan untuk ditindaklanjuti.',
+            'dalam_proses'     => 'Laporan sedang dalam proses penanganan. Mohon menunggu informasi selanjutnya.',
+            'selesai'          => 'Laporan telah selesai ditangani. Terima kasih atas partisipasi Anda.',
+            default            => '',
         };
     }
 }

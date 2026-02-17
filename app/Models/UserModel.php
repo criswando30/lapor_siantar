@@ -6,33 +6,33 @@ use CodeIgniter\Model;
 
 class UserModel extends Model
 {
-    protected $table      = 'users';
+    protected $table = 'users';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
-
-    protected $allowedFields = [
-        'nik',
-        'nama_lengkap',
-        'tempat_tinggal',
-        'tanggal_lahir',
-        'jenis_kelamin',
-        'no_telp',
-        'email',
-        'username',
-        'password_hash',
-    ];
+    protected $useAutoIncrement = true;
 
     protected $useTimestamps = true;
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
+    protected $createdField = 'created_at';
+    protected $updatedField = 'updated_at';
 
-    public function findByIdentifier(string $identifier)
+    protected $allowedFields = [
+        'nama',
+        'no_hp',
+        'email',
+        'password_hash',
+        'role',
+        'status_akun',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function findByIdentifier(string $identifier): ?array
     {
-        return $this->groupStart()
-            ->where('email', $identifier)
-            ->orWhere('username', $identifier)
-            ->orWhere('no_telp', $identifier)
-        ->groupEnd()
-        ->first();
+        $identifier = trim($identifier);
+
+        return $this->where('email', $identifier)
+            ->orWhere('no_hp', $identifier)
+            ->first();
     }
+
 }

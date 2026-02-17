@@ -8,10 +8,14 @@ class KategoriModel extends Model
 {
     protected $table      = 'kategori';
     protected $primaryKey = 'id';
-    protected $returnType = 'array';
 
-    public function getActive(): array
-    {
-        return $this->where('aktif', 1)->orderBy('nama', 'ASC')->findAll();
-    }
+    protected $allowedFields = [
+        'nama_kategori',
+        'created_at',
+        'updated_at',
+    ];
+
+    protected $useTimestamps = true;
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
 }

@@ -1,6 +1,12 @@
 <?= $this->extend('admin/layouts/admin'); ?>
-
 <?= $this->section('content'); ?>
+
+<?php
+$from = $filters['from'] ?? '';
+$to = $filters['to'] ?? '';
+$dateActive = ($from !== '' || $to !== '');
+?>
+
 <div class="page">
 
     <!-- Header -->
@@ -15,25 +21,25 @@
     <section class="kpi">
         <div class="kpi__card kpi__card--red">
             <div class="kpi__label">TOTAL LAPORAN</div>
-            <div class="kpi__value"><?= esc($kpi['total'] ?? 0); ?></div>
+            <div class="kpi__value"><?= esc($stats['total'] ?? 0); ?></div>
             <div class="kpi__bar"></div>
         </div>
 
         <div class="kpi__card kpi__card--orange">
             <div class="kpi__label">MENUNGGU VERIFIKASI</div>
-            <div class="kpi__value"><?= esc($kpi['menunggu'] ?? 0); ?></div>
+            <div class="kpi__value"><?= esc($stats['menunggu'] ?? 0); ?></div>
             <div class="kpi__bar"></div>
         </div>
 
         <div class="kpi__card kpi__card--blue">
             <div class="kpi__label">SEDANG DIPROSES</div>
-            <div class="kpi__value"><?= esc($kpi['diproses'] ?? 0); ?></div>
+            <div class="kpi__value"><?= esc($stats['diproses'] ?? 0); ?></div>
             <div class="kpi__bar"></div>
         </div>
 
         <div class="kpi__card kpi__card--green">
             <div class="kpi__label">LAPORAN SELESAI</div>
-            <div class="kpi__value"><?= esc($kpi['selesai'] ?? 0); ?></div>
+            <div class="kpi__value"><?= esc($stats['selesai'] ?? 0); ?></div>
             <div class="kpi__bar"></div>
         </div>
     </section>
@@ -45,75 +51,115 @@
             <!-- Toolbar Filter -->
             <form class="table-tools" method="get" action="<?= current_url(); ?>">
                 <div class="table-tools__left">
-                    <div class="input">
+                    <div class="input input--search">
                         <i class="bi bi-search"></i>
                         <input type="text" name="q" value="<?= esc($filters['q'] ?? ''); ?>"
-                            placeholder="Cari ID, Pelapor, atau kata kunci pengaduan..." autocomplete="off">
+                            placeholder="Cari kode tiket, pelapor, atau kata kunci..." autocomplete="off">
                     </div>
+
+                    <?php if ($dateActive): ?>
+                        <div class="filter-chip" title="Filter tanggal aktif">
+                            <i class="bi bi-calendar3"></i>
+                            <span>
+                                <?= esc($from ?: '...'); ?> → <?= esc($to ?: '...'); ?>
+                            </span>
+                            <a class="chip-x" href="<?= current_url(); ?>?<?= http_build_query(array_filter([
+                                  'q' => $filters['q'] ?? '',
+                                  'status' => $filters['status'] ?? '',
+                                  'kategori_id' => $filters['kategori_id'] ?? '',
+                              ])); ?>" aria-label="Hapus filter tanggal">✕</a>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="table-tools__right">
                     <select class="select" name="status">
                         <option value="">Semua Status</option>
-                        <option value="menunggu" <?= (($filters['status'] ?? '') === 'menunggu') ? 'selected' : ''; ?>>
-                            Menunggu
-                            Verifikasi</option>
-                        <option value="diproses" <?= (($filters['status'] ?? '') === 'diproses') ? 'selected' : ''; ?>>
-                            Sedang
-                            Diproses</option>
+                        <option value="laporan_diterima" <?= (($filters['status'] ?? '') === 'laporan_diterima') ? 'selected' : ''; ?>>Diterima</option>
+                        <option value="diverifikasi" <?= (($filters['status'] ?? '') === 'diverifikasi') ? 'selected' : ''; ?>>Diverifikasi</option>
+                        <option value="dalam_proses" <?= (($filters['status'] ?? '') === 'dalam_proses') ? 'selected' : ''; ?>>Dalam Proses</option>
                         <option value="selesai" <?= (($filters['status'] ?? '') === 'selesai') ? 'selected' : ''; ?>>
-                            Selesai
-                        </option>
+                            Selesai</option>
                     </select>
 
-                    <select class="select" name="kategori">
+                    <select class="select" name="kategori_id">
                         <option value="">Semua Kategori</option>
                         <?php foreach (($kategoriList ?? []) as $k): ?>
-                            <option value="<?= esc($k['id']); ?>" <?= ((string) ($filters['kategori'] ?? '') === (string) $k['id']) ? 'selected' : ''; ?>>
-                                <?= esc($k['nama']); ?>
+                            <option value="<?= esc($k['id']); ?>" <?= ((string) ($filters['kategori_id'] ?? '') === (string) $k['id']) ? 'selected' : ''; ?>>
+                                <?= esc($k['nama_kategori']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
 
+                    <div class="date-filter" id="dateFilter">
+                        <button class="btn btn--ghost <?= $dateActive ? 'is-active' : '' ?>" type="button" id="btnDate"
+                            aria-expanded="false">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Filter Tanggal</span>
+                        </button>
 
-                    <button class="btn btn--ghost" type="button" id="btnDate">
-                        <i class="bi bi-calendar3"></i>
-                        <span>Filter Tanggal</span>
-                    </button>
+                        <div class="date-popover" id="datePopover" hidden>
+                            <div class="date-popover__head">
+                                <div class="date-popover__title">Rentang Tanggal</div>
+                                <button type="button" class="date-popover__close" id="btnCloseDate"
+                                    aria-label="Tutup">✕</button>
+                            </div>
+
+                            <div class="date-popover__body">
+                                <div class="date-grid">
+                                    <div class="date-field">
+                                        <label class="date-label">Dari</label>
+                                        <input class="date-input" type="date" name="from" value="<?= esc($from) ?>">
+                                    </div>
+
+                                    <div class="date-field">
+                                        <label class="date-label">Sampai</label>
+                                        <input class="date-input" type="date" name="to" value="<?= esc($to) ?>">
+                                    </div>
+                                </div>
+
+                                <div class="date-actions">
+                                    <a class="btn btn--ghost btn--sm" href="<?= current_url(); ?>?<?= http_build_query(array_filter([
+                                          'q' => $filters['q'] ?? '',
+                                          'status' => $filters['status'] ?? '',
+                                          'kategori_id' => $filters['kategori_id'] ?? '',
+                                      ])); ?>">Reset Tanggal</a>
+
+                                    <button type="button" class="btn btn--ghost btn--sm"
+                                        id="btnCloseDate2">Tutup</button>
+                                </div>
+
+
+                                <small class="date-hint">Tip: klik di luar untuk menutup popover.</small>
+                            </div>
+                        </div>
+                    </div>
 
                     <button class="btn btn--primary" type="submit">
                         <i class="bi bi-funnel"></i>
                         <span>Terapkan</span>
                     </button>
+
+                    <a class="btn btn--ghost" href="<?= current_url(); ?>">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <span>Reset</span>
+                    </a>
                 </div>
             </form>
-
-            <!-- (opsional) date range hidden -->
-            <div class="date-row" id="dateRow" hidden>
-                <div class="input">
-                    <i class="bi bi-calendar3"></i>
-                    <input type="date" name="start" form="__fake" value="<?= esc($filters['start'] ?? ''); ?>">
-                </div>
-                <div class="input">
-                    <i class="bi bi-calendar3"></i>
-                    <input type="date" name="end" form="__fake" value="<?= esc($filters['end'] ?? ''); ?>">
-                </div>
-                <small class="hint">Pilih rentang tanggal lalu klik Terapkan.</small>
-            </div>
 
             <!-- Table -->
             <div class="table-wrap">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th style="width: 150px;">ID &amp; TANGGAL</th>
-                            <th style="width: 200px;">IDENTITAS PELAPOR</th>
+                            <th style="width: 170px;">ID &amp; TANGGAL</th>
+                            <th style="width: 220px;">IDENTITAS PELAPOR</th>
                             <th>KATEGORI &amp;<br>DESKRIPSI LAPORAN</th>
-                            <th style="width: 150px;">STATUS<br>TERKINI</th>
-                            <th style="width: 170px;">PETUGAS<br>TERKAIT</th>
-                            <th style="width: 110px;">AKSI</th>
+                            <th style="width: 160px;">STATUS<br>TERKINI</th>
+                            <th style="width: 120px;">AKSI</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php if (!empty($rows)): ?>
                             <?php foreach ($rows as $r): ?>
@@ -136,38 +182,38 @@
                                     </td>
 
                                     <td>
-                                        <div class="cell-desc">
+                                        <div class="cell-desc cell-desc--center">
                                             <div class="badge badge--cat"><?= esc($r['kategori']); ?></div>
                                             <div class="cell-desc__text"><?= esc($r['deskripsi']); ?></div>
                                         </div>
                                     </td>
 
-                                    <td>
+                                    <td class="td-center">
                                         <?php
                                         $st = $r['status'];
-                                        $cls = $st === 'menunggu' ? 'badge--warn' : ($st === 'diproses' ? 'badge--info' : 'badge--ok');
-                                        $label = $st === 'menunggu' ? 'Menunggu' : ($st === 'diproses' ? 'Diproses' : 'Selesai');
+                                        $map = [
+                                            'laporan_diterima' => ['cls' => 'badge--warn', 'label' => 'Diterima'],
+                                            'diverifikasi' => ['cls' => 'badge--info', 'label' => 'Diverifikasi'],
+                                            'dalam_proses' => ['cls' => 'badge--info', 'label' => 'Dalam Proses'],
+                                            'selesai' => ['cls' => 'badge--ok', 'label' => 'Selesai'],
+                                        ];
+                                        $cls = $map[$st]['cls'] ?? 'badge--warn';
+                                        $label = $map[$st]['label'] ?? $st;
                                         ?>
-                                        <span class="badge <?= $cls; ?>"><?= $label; ?></span>
+                                        <span class="badge <?= $cls; ?>"><?= esc($label); ?></span>
                                     </td>
 
                                     <td>
-                                        <div class="cell-petugas">
-                                            <?= esc($r['petugas'] ?? '-'); ?>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <a class="btn btn--sm btn--ghost" href="<?= base_url('admin/pengaduan/' . $r['id']); ?>">
+                                        <a class="btn btn--sm btn--ghost"
+                                            href="<?= base_url('admin/pengaduan/' . $r['id']); ?>">
                                             <i class="bi bi-eye"></i> Detail
                                         </a>
-
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" class="empty">
+                                <td colspan="5" class="empty">
                                     <div class="empty__title">Belum ada data pengaduan</div>
                                     <div class="empty__subtitle">Gunakan filter di atas untuk menampilkan data.</div>
                                 </td>
@@ -177,20 +223,47 @@
                 </table>
             </div>
 
+            <!-- Pager (kalau ada) -->
+            <?php if (isset($pager) && $pager->getPageCount('laporan_admin') > 1): ?>
+                <div class="pager-wrap" style="margin-top:12px;">
+                    <?= $pager->links('laporan_admin', 'default_full') ?>
+                </div>
+            <?php endif; ?>
+
         </div>
     </section>
-
 </div>
 
 <script>
-    // toggle date row (simple)
     (function () {
+        const wrap = document.getElementById('dateFilter');
         const btn = document.getElementById('btnDate');
-        const row = document.getElementById('dateRow');
-        if (!btn || !row) return;
-        btn.addEventListener('click', () => {
-            row.hidden = !row.hidden;
-        });
+        const pop = document.getElementById('datePopover');
+        const closeBtn = document.getElementById('btnCloseDate');
+        if (!wrap || !btn || !pop) return;
+
+        function openPop() {
+            pop.hidden = false;
+            btn.setAttribute('aria-expanded', 'true');
+        }
+        function closePop() {
+            pop.hidden = true;
+            btn.setAttribute('aria-expanded', 'false');
+        }
+
+        btn.addEventListener('click', () => pop.hidden ? openPop() : closePop());
+        if (closeBtn) closeBtn.addEventListener('click', closePop);
+
+        document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) closePop(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePop(); });
+
+        const hasFrom = new URLSearchParams(window.location.search).get('from');
+        const hasTo = new URLSearchParams(window.location.search).get('to');
+        if (hasFrom || hasTo) openPop();
+        const closeBtn2 = document.getElementById('btnCloseDate2');
+        if (closeBtn2) closeBtn2.addEventListener('click', closePop);
+
     })();
 </script>
+
 <?= $this->endSection(); ?>

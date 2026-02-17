@@ -1,4 +1,4 @@
-<?= $this->extend('admin/layouts//admin') ?>
+<?= $this->extend('admin/layouts/admin') ?>
 
 <?= $this->section('content') ?>
 
@@ -76,10 +76,11 @@
             </div>
             <div class="activity__meta">
               <span class="activity__status"><?= esc($a['status']) ?></span>
-              <a class="activity__link" href="#">Detail ›</a>
+              <a class="activity__link" href="<?= site_url('admin/pengaduan/' . $a['id']) ?>">Detail ›</a>
             </div>
           </div>
         <?php endforeach; ?>
+
       </div>
     </section>
   </div>

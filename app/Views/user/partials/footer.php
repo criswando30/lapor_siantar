@@ -1,13 +1,11 @@
 <footer class="site-footer">
   <div class="container footer-inner">
-
     <div class="footer-grid">
-      <!-- KIRI -->
       <div class="footer-brand">
-        <img src="<?= base_url('assets/img/logo.png') ?>" alt="LaporSiantar">
+        <img src="<?= base_url('assets/img/logo.png') ?>" alt="Lapor E-Gov Siantar">
         <p>
-          Layanan Aspirasi dan Pengaduan<br>
-          Masyarakat Online Pematangsiantar
+          Layanan Laporan Gangguan<br>
+          Produk e-Government Diskominfo Pematangsiantar
         </p>
 
         <div class="footer-info">
@@ -20,8 +18,8 @@
 
           <div class="footer-info-row">
             <i class="bi bi-envelope-fill"></i>
-            <a class="footer-link2" href="mailto:pengaduan@pematangsiantar.go.id">
-              pengaduan@pematangsiantar.go.id
+            <a class="footer-link2" href="mailto:diskominfo@pematangsiantar.go.id">
+              diskominfo@pematangsiantar.go.id
             </a>
           </div>
 
@@ -34,15 +32,14 @@
         </div>
       </div>
 
-      <!-- TENGAH -->
       <div>
         <h6 class="footer-title">TAUTAN CEPAT</h6>
-
         <ul class="footer-links">
           <li><a class="footer-link" href="<?= site_url() ?>">BERANDA</a></li>
-          <li><a class="footer-link" href="<?= site_url('status') ?>">STATUS PENGADUAN</a></li>
+          <li><a class="footer-link" href="<?= site_url('status') ?>">STATUS LAPORAN</a></li>
           <li><a class="footer-link" href="<?= site_url('tentang') ?>">TENTANG</a></li>
-          <li><a class="footer-link" href="<?= site_url('berita') ?>">BERITA</a></li><li>
+          <li><a class="footer-link" href="<?= site_url('berita') ?>">BERITA</a></li>
+          <li>
             <a class="footer-link" href="https://pematangsiantar.go.id/" target="_blank" rel="noopener noreferrer">
               WEBSITE RESMI PEMATANGSIANTAR
             </a>
@@ -50,10 +47,8 @@
         </ul>
       </div>
 
-      <!-- KANAN -->
       <div>
         <h6 class="footer-title">SOSIAL MEDIA</h6>
-
         <div class="socials">
           <a class="social-btn" href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
           <a class="social-btn" href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
@@ -70,6 +65,5 @@
         <span>2026. DISKOMINFO PEMATANGSIANTAR</span>
       </div>
     </div>
-
   </div>
 </footer>
